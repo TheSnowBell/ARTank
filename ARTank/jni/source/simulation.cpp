@@ -1,5 +1,12 @@
 #include "simulation.h"
 
+#include <android/log.h>
+
+#ifdef DEBUG
+#define  LOG_TAG    "ARTank"
+#define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
+#endif
+
 #define WALLMASS 1		// wall box mass
 #define ITERS 20		// number of iterations
 
@@ -23,12 +30,18 @@ dReal grauToRad(dReal grau) { return (M_PI/180.0)*grau; }
 
 Simulation::Simulation()
 {
+#ifdef DEBUG
+	LOGI("Creating simulation...");
+#endif
     dInitODE();
     setupSimulation();
 }
 
 Simulation::~Simulation()
 {
+#ifdef DEBUG
+	LOGI("Deleting simulation...");
+#endif
     shutdownSimulation();
     dCloseODE();
 }
@@ -132,6 +145,9 @@ void Simulation::atirar()
 
 void Simulation::reset()
 {
+#ifdef DEBUG
+	LOGI("Reseting simulation...");
+#endif
     shutdownSimulation();
     setupSimulation();
 }

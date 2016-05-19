@@ -13,17 +13,9 @@ public class ARTankRenderer extends ARRenderer{
 		System.loadLibrary("ARTank");
     }
 	
-    public static native void initialise();
     public static native void surfaceCreated();
     public static native void surfaceChanged(int w, int h);
     public static native void drawFrame(); 
-    
-	@Override
-	public boolean configureARScene() {
-		// TODO Auto-generated method stub
-		ARTankRenderer.initialise();
-		return true;
-	}
 	
 	@Override
 	public void onSurfaceChanged(GL10 gl, int w, int h) {

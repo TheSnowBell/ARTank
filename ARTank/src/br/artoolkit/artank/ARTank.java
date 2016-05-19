@@ -28,6 +28,7 @@ public class ARTank extends ARActivity implements OnClickListener{
 	public static native void cannonUp();
 	public static native void cannonDown();
 	public static native void reset();
+	public static native void initialise();
 	
 	
 	private ImageButton createButton(Context context, int id, int resID){
@@ -49,7 +50,7 @@ public class ARTank extends ARActivity implements OnClickListener{
 	@Override
 	public void onResume() {
 		super.onResume();
-		
+		ARTank.initialise();
 		mainLayout = (FrameLayout)this.findViewById(R.id.mainLayout);
 		buttonUp = createButton(this, 0, R.drawable.arrow_up);
 		buttonDown = createButton(this, 1, R.drawable.arrow_down);

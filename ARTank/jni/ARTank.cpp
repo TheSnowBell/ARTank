@@ -22,7 +22,7 @@ static void OpenGLtoODE(GLfloat *matriz, dMatrix3 dTransMat);
 static void ODEtoOpenGL(dGeomID object, GLfloat *matriz);
 static void ODEtoOpenGL2(dBodyID object, GLfloat *matriz);
 
-Simulation *simulation;
+static Simulation *simulation;
 Cube cube(WBOXSIZE,WBOXSIZE,WBOXSIZE);
 Sphere cannoBall(CANNON_BALL_RADIUS,20,20);
 Cube cannoBox(2,2,2);
@@ -45,12 +45,12 @@ const GLfloat high_shininess[] = { 25.0f };
 
 static int markers[2] = {0};
 
-JNIEXPORT void JNICALL Java_br_artoolkit_artank_ARTankRenderer_initialise
-  (JNIEnv *env, jobject object){
+JNIEXPORT void JNICALL Java_br_artoolkit_artank_ARTank_initialise
+  (JNIEnv *, jobject object){
 	isreset = false;
 	isatirar = false;
 	isdeleted = false;
-
+	
     markers[0] = arwAddMarker("single;Data/primeiro.patt;160");
    	markers[1] = arwAddMarker("single;Data/quarto.patt;160");
 
@@ -190,7 +190,6 @@ JNIEXPORT void JNICALL Java_br_artoolkit_artank_ARTank_shutdown
   (JNIEnv *env, jobject object){
 	isdeleted=true;
 	delete simulation;
-	arwShutdownAR();
 }
 
 JNIEXPORT void JNICALL Java_br_artoolkit_artank_ARTank_shot

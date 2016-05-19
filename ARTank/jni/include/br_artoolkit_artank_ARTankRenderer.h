@@ -9,14 +9,6 @@ extern "C" {
 #endif
 /*
  * Class:     br_artoolkit_artank_ARTankRenderer
- * Method:    initialise
- * Signature: ()V
- */
-JNIEXPORT void JNICALL Java_br_artoolkit_artank_ARTankRenderer_initialise
-  (JNIEnv *, jobject object);
-
-/*
- * Class:     br_artoolkit_artank_ARTankRenderer
  * Method:    surfaceCreated
  * Signature: ()V
  */

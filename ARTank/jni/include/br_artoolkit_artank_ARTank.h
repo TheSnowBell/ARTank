@@ -64,8 +64,8 @@ extern "C" {
  */
 JNIEXPORT void JNICALL Java_br_artoolkit_artank_ARTank_shutdown
   (JNIEnv *, jobject object);
-  
-  /*
+
+/*
  * Class:     br_artoolkit_artank_ARTank
  * Method:    shot
  * Signature: ()V
@@ -95,6 +95,14 @@ JNIEXPORT void JNICALL Java_br_artoolkit_artank_ARTank_cannonDown
  * Signature: ()V
  */
 JNIEXPORT void JNICALL Java_br_artoolkit_artank_ARTank_reset
+  (JNIEnv *, jobject object);
+
+/*
+ * Class:     br_artoolkit_artank_ARTank
+ * Method:    initialise
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_br_artoolkit_artank_ARTank_initialise
   (JNIEnv *, jobject object);
 
 #ifdef __cplusplus

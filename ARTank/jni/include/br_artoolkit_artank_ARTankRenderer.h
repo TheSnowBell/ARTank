@@ -30,6 +30,14 @@ JNIEXPORT void JNICALL Java_br_artoolkit_artank_ARTankRenderer_surfaceChanged
  */
 JNIEXPORT void JNICALL Java_br_artoolkit_artank_ARTankRenderer_drawFrame
   (JNIEnv *, jobject object);
+  
+/*
+ * Class:     br_artoolkit_artank_ARTankRenderer
+ * Method:    initialiseMarkers
+ * Signature: ()V
+*/  
+JNIEXPORT void JNICALL Java_br_artoolkit_artank_ARTankRenderer_initialiseMarkers
+  (JNIEnv *, jobject object);  
 
 #ifdef __cplusplus
 }

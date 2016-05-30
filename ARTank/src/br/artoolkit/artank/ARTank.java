@@ -5,6 +5,7 @@ import org.artoolkit.ar.base.rendering.ARRenderer;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -15,7 +16,12 @@ import android.widget.LinearLayout;
 	
 public class ARTank extends ARActivity implements OnClickListener{
 	
-	private ARTankRenderer arTankRenderer = new ARTankRenderer();
+	//Load the native libraries.
+    static {
+    	System.loadLibrary("c++_shared");
+		System.loadLibrary("ARWrapper");
+		System.loadLibrary("ARTank");
+    }
 	
 	private FrameLayout mainLayout;
 	private ImageButton buttonShot;
@@ -23,13 +29,9 @@ public class ARTank extends ARActivity implements OnClickListener{
 	private ImageButton buttonDown;
 	private ImageButton buttonReset;
 	
-	public static native void shutdown();
-	public static native void shot();
-	public static native void cannonUp();
-	public static native void cannonDown();
-	public static native void reset();
-	public static native void initialise();
-	
+	private Simulation simulation;
+	private Thread loopSimulation;	
+	private ARTankRenderer arTankRenderer = new ARTankRenderer();
 	
 	private ImageButton createButton(Context context, int id, int resID){
 		ImageButton imageButton = new ImageButton(context);
@@ -48,9 +50,18 @@ public class ARTank extends ARActivity implements OnClickListener{
 	}
 	
 	@Override
+	protected void onStart() {
+		// TODO Auto-generated method stub
+		super.onStart();
+		simulation = new Simulation();
+		loopSimulation = new Thread(simulation);
+		loopSimulation.start();
+	}
+	
+	@Override
 	public void onResume() {
 		super.onResume();
-		ARTank.initialise();
+		
 		mainLayout = (FrameLayout)this.findViewById(R.id.mainLayout);
 		buttonUp = createButton(this, 0, R.drawable.arrow_up);
 		buttonDown = createButton(this, 1, R.drawable.arrow_down);
@@ -75,25 +86,27 @@ public class ARTank extends ARActivity implements OnClickListener{
  		mainLayout.addView(buttonShot, new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, Gravity.END | Gravity.BOTTOM ));
  		mainLayout.addView(buttonReset, new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, Gravity.END | Gravity.TOP ));
 		
+		
 	}
 	
 	@Override
 	public void onStop() {
 		// TODO Auto-generated method stub
 		super.onStop();
-		ARTank.shutdown();
-	}
-	
-	@Override
-	protected void onPause() {
-		// TODO Auto-generated method stub
-		super.onPause();
+		simulation.setFinished(true);
 	}
 	
 	@Override
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
 		super.onDestroy();
+		try {
+			loopSimulation.join();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		simulation.Shutdown();
 	}
 	
 	@Override
@@ -113,19 +126,37 @@ public class ARTank extends ARActivity implements OnClickListener{
 		// TODO Auto-generated method stub
 		switch (v.getId()) {
 		case 0:
-			ARTank.cannonUp();
+			simulation.cannonUp();
 		break;
 
 		case 1:
-			ARTank.cannonDown();
+			simulation.cannonDown();
 		break;
 		
 		case 2:
-			ARTank.shot();
+			simulation.Shot();
 		break;
 		
 		case 3:
-			ARTank.reset();
+			
+			if(loopSimulation!=null){
+				simulation.setFinished(true);
+				loopSimulation.interrupt();
+				try {
+					loopSimulation.join();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+				simulation.Shutdown();
+			}
+			
+			simulation = new Simulation();
+			loopSimulation = new Thread(simulation);
+			
+			loopSimulation.start();
+			
 		break;
 		}
 		

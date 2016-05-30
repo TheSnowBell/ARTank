@@ -1,11 +1,12 @@
 #include "simulation.h"
 
 #include <android/log.h>
+#include <ctime>
 
-#ifdef DEBUG
+int delay=20;
+
 #define  LOG_TAG    "ARTank"
 #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
-#endif
 
 #define WALLMASS 1		// wall box mass
 #define ITERS 20		// number of iterations
@@ -101,6 +102,7 @@ void Simulation::shutdownSimulation()
 void Simulation::simLoop(bool pause)
 {
     if (!pause) {
+	    delay++;
         dSpaceCollide (space,0,&nearCallback);
         dWorldQuickStep (world,0.05);
         dJointGroupEmpty (contactgroup);
@@ -133,6 +135,8 @@ void Simulation::nearCallback(void *data, dGeomID o1, dGeomID o2)
 
 void Simulation::atirar()
 {
+	if(delay>=20){
+	delay=0;
     dBodyEnable(cannon_ball_body);
     dGeomEnable(cannon_ball_geom);
     dReal cpos[3] = {cannoBox[3],cannoBox[7],cannoBox[11]};
@@ -141,6 +145,7 @@ void Simulation::atirar()
     dReal force = 10;
     dBodySetLinearVel (cannon_ball_body,force*cannoCylinder[2],force*cannoCylinder[6],force*cannoCylinder[10]);
     dBodySetAngularVel (cannon_ball_body,0,0,0);
+    }
 }
 
 void Simulation::reset()

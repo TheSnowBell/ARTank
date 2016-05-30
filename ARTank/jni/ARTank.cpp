@@ -1,5 +1,5 @@
-#include "br_artoolkit_artank_ARTank.h"
 #include "br_artoolkit_artank_ARTankRenderer.h"
+#include "br_artoolkit_artank_Simulation.h"
 
 #include <jni.h>
 #include <AR/gsub_es.h>
@@ -45,17 +45,22 @@ const GLfloat high_shininess[] = { 25.0f };
 
 static int markers[2] = {0};
 
-JNIEXPORT void JNICALL Java_br_artoolkit_artank_ARTank_initialise
+
+JNIEXPORT void JNICALL Java_br_artoolkit_artank_ARTankRenderer_initialiseMarkers
   (JNIEnv *, jobject object){
+  
+	markers[0] = arwAddMarker("single;Data/primeiro.patt;160");
+	markers[1] = arwAddMarker("single;Data/quarto.patt;160");
+}
+
+JNIEXPORT void JNICALL Java_br_artoolkit_artank_Simulation_initialise
+  (JNIEnv *, jobject object){
+   	ARLOG("Creating.....");
 	isreset = false;
 	isatirar = false;
 	isdeleted = false;
 	
-    markers[0] = arwAddMarker("single;Data/primeiro.patt;160");
-   	markers[1] = arwAddMarker("single;Data/quarto.patt;160");
-
 	simulation = new Simulation();
-
 }
 
 JNIEXPORT void JNICALL Java_br_artoolkit_artank_ARTankRenderer_surfaceCreated
@@ -70,7 +75,7 @@ JNIEXPORT void JNICALL Java_br_artoolkit_artank_ARTankRenderer_surfaceChanged
 
 static void draw(float gl[16], int id){
 	glLoadMatrixf(gl);
-//	ARLOG("Desenhando id: %d, %d", id, markers[0]);
+
 	glScalef(SCALAR,SCALAR,SCALAR);
 	if(id == markers[0]){
 		for (int i = 0; i < simulation->wb; i++){
@@ -120,13 +125,6 @@ JNIEXPORT void JNICALL Java_br_artoolkit_artank_ARTankRenderer_drawFrame
 		simulation->reset();
 		isreset = false;
 	}
-	if(isatirar){
-		simulation->atirar();
-		isatirar = false;
-	}
-
-	simulation->simLoop(false);
-
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -171,8 +169,25 @@ JNIEXPORT void JNICALL Java_br_artoolkit_artank_ARTankRenderer_drawFrame
 		}
 	}
 
+}
 
-	if(visi>=2){
+JNIEXPORT void JNICALL Java_br_artoolkit_artank_Simulation_shutdown
+  (JNIEnv *, jobject object){
+   	ARLOG("Shutdown.....");
+	delete simulation;
+}
+
+JNIEXPORT void JNICALL Java_br_artoolkit_artank_Simulation_shot
+  (JNIEnv *, jobject object){
+  	ARLOG("Shoting.....");
+	int count=0;
+	for(int i=0; i<2; i++){
+		if (arwQueryMarkerVisibility(markers[i])) {
+			count++;
+		}
+	}
+
+	if(count==2){
 	   	dMatrix3 markerBaseMat, markerGeomMat;
 	    //convertendo em dMatrix3
 	   	float trans[16];
@@ -183,49 +198,34 @@ JNIEXPORT void JNICALL Java_br_artoolkit_artank_ARTankRenderer_drawFrame
 	    OpenGLtoODE(trans, markerGeomMat);
 
 	    simulation->AttMatrixCanno(markerBaseMat,markerGeomMat, cannon_elevation);
+	 
+		simulation->atirar();
 	}
+	
 }
 
-JNIEXPORT void JNICALL Java_br_artoolkit_artank_ARTank_shutdown
-  (JNIEnv *env, jobject object){
-	isdeleted=true;
-	delete simulation;
-}
-
-JNIEXPORT void JNICALL Java_br_artoolkit_artank_ARTank_shot
-(JNIEnv *, jobject object){
-	int count=0;
-	for(int i=0; i<2; i++){
-		if (arwQueryMarkerVisibility(markers[i])) {
-			count++;
-		}
-	}
-
-	if(count==2){
-		isatirar = true;
-	}
-}
-
-JNIEXPORT void JNICALL Java_br_artoolkit_artank_ARTank_cannonUp
-(JNIEnv *, jobject object){
+JNIEXPORT void JNICALL Java_br_artoolkit_artank_Simulation__1cannonUp
+  (JNIEnv *, jobject object){
+  	ARLOG("Cannon Up.....");
 	cannon_elevation = cannon_elevation - 0.5;
 	if(cannon_elevation == -12.0){
 		cannon_elevation = 0.0;
 	}
 }
 
-JNIEXPORT void JNICALL Java_br_artoolkit_artank_ARTank_cannonDown
-(JNIEnv *, jobject object){
+JNIEXPORT void JNICALL Java_br_artoolkit_artank_Simulation__1cannonDown
+  (JNIEnv *, jobject object){
+  	ARLOG("Cannon Down.....");
 	cannon_elevation = cannon_elevation + 0.5;
 	if(cannon_elevation == 12.0){
 		cannon_elevation = 0.0;
 	}
 }
 
-JNIEXPORT void JNICALL Java_br_artoolkit_artank_ARTank_reset
-(JNIEnv *, jobject object){
-	isreset = true;
-}
+JNIEXPORT void JNICALL Java_br_artoolkit_artank_Simulation_running
+  (JNIEnv *, jobject object){
+ 	simulation->simLoop(false);
+ }
 
 static void OpenGLtoODE(GLfloat *matriz, dMatrix3 dTransMat){
 

@@ -6,17 +6,18 @@ import org.artoolkit.ar.base.rendering.ARRenderer;
 
 public class ARTankRenderer extends ARRenderer{
 
-	//Load the native libraries.
-    static {
-    	System.loadLibrary("c++_shared");
-		System.loadLibrary("ARWrapper");
-		System.loadLibrary("ARTank");
-    }
-	
     public static native void surfaceCreated();
     public static native void surfaceChanged(int w, int h);
-    public static native void drawFrame(); 
+    public static native void drawFrame();
+    public static native void initialiseMarkers();
+    
 	
+    @Override
+	public boolean configureARScene() {
+    	ARTankRenderer.initialiseMarkers();
+    	return true;
+    }
+    
 	@Override
 	public void onSurfaceChanged(GL10 gl, int w, int h) {
 		// TODO Auto-generated method stub

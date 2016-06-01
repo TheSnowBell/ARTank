@@ -1,12 +1,13 @@
 #include "simulation.h"
 
 #include <android/log.h>
-#include <ctime>
 
 int delay=20;
 
+#ifdef DEBUG
 #define  LOG_TAG    "ARTank"
 #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
+#endif
 
 #define WALLMASS 1		// wall box mass
 #define ITERS 20		// number of iterations
@@ -28,6 +29,17 @@ static void atualizarRotacao(dMatrix3 atual, dMatrix3 nova);
 static void atualizarPosicao(dMatrix3 atual, dVector3 nova);
 dReal grauToRad(dReal grau) { return (M_PI/180.0)*grau; }
 
+static BodyGeom createBullet(dWorldID world,dSpaceID space){
+	BodyGeom aux;
+	aux.body = dBodyCreate (world);
+	aux.geom = dCreateSphere (space,CANNON_BALL_RADIUS);
+    dMass m;
+    dMassSetSphereTotal (&m,CANNON_BALL_MASS,CANNON_BALL_RADIUS);
+    
+    dBodySetMass(aux.body, &m);
+    dGeomSetBody(aux.geom, aux.body);
+    return aux;
+}
 
 Simulation::Simulation()
 {
@@ -49,7 +61,7 @@ Simulation::~Simulation()
 
 void Simulation::setupSimulation()
 {
-
+	bullets = new std::vector<BodyGeom>();
     world = dWorldCreate();
     space = dSweepAndPruneSpaceCreate( 0, dSAP_AXES_XYZ );
     contactgroup = dJointGroupCreate (0);
@@ -81,15 +93,6 @@ void Simulation::setupSimulation()
 
     dRSetIdentity(cannoBox);
     dRSetIdentity(cannoCylinder);
-    cannon_ball_body = dBodyCreate (world);
-    cannon_ball_geom = dCreateSphere (space,CANNON_BALL_RADIUS);
-    dMassSetSphereTotal (&m,CANNON_BALL_MASS,CANNON_BALL_RADIUS);
-    dBodySetMass (cannon_ball_body,&m);
-    dGeomSetBody (cannon_ball_geom,cannon_ball_body);
-    dBodySetPosition (cannon_ball_body,0,0,0);
-    dBodyDisable(cannon_ball_body);
-    dGeomDisable(cannon_ball_geom);
-
 }
 
 void Simulation::shutdownSimulation()
@@ -97,6 +100,7 @@ void Simulation::shutdownSimulation()
     dSpaceDestroy (space);
     dWorldDestroy (world);
     dJointGroupDestroy (contactgroup);
+    delete bullets;
 }
 
 void Simulation::simLoop(bool pause)
@@ -123,10 +127,7 @@ void Simulation::nearCallback(void *data, dGeomID o1, dGeomID o2)
 
     if (n > 0) {
         for (i=0; i<n; i++) {
-          //  contact[i].surface.mode = dContactBounce;
             contact[i].surface.mu = dInfinity;
-            //contact[i].surface.bounce = 0;
-            //contact[i].surface.bounce_vel = 1;
             dJointID c = dJointCreateContact (world,contactgroup,contact+i);
             dJointAttach (c,dGeomGetBody(o1),dGeomGetBody(o2));
         }
@@ -135,16 +136,25 @@ void Simulation::nearCallback(void *data, dGeomID o1, dGeomID o2)
 
 void Simulation::atirar()
 {
-	if(delay>=20){
-	delay=0;
-    dBodyEnable(cannon_ball_body);
-    dGeomEnable(cannon_ball_geom);
-    dReal cpos[3] = {cannoBox[3],cannoBox[7],cannoBox[11]};
-    for (int i=0; i<3; i++) cpos[i] += 3*cannoCylinder[i*4+2];
-    dBodySetPosition (cannon_ball_body,cpos[0],cpos[1],cpos[2]);
-    dReal force = 10;
-    dBodySetLinearVel (cannon_ball_body,force*cannoCylinder[2],force*cannoCylinder[6],force*cannoCylinder[10]);
-    dBodySetAngularVel (cannon_ball_body,0,0,0);
+	if(delay>=10){
+	    if(bullets->size() == 10){
+		    dGeomDisable(bullets->at(0).geom);
+		    dBodyDisable(bullets->at(0).body);
+   		    dGeomDestroy(bullets->at(0).geom);
+		    dBodyDestroy(bullets->at(0).body);
+	    	bullets->erase(bullets->begin());
+	    }
+	    
+    	BodyGeom temp = createBullet(world, space);	
+   	    dReal cpos[3] = {cannoBox[3],cannoBox[7],cannoBox[11]};
+	    for (int i=0; i<3; i++) cpos[i] += 3*cannoCylinder[i*4+2];
+	    dBodySetPosition (temp.body, cpos[0], cpos[1], cpos[2]);
+	    dReal force = 10;
+	    dBodySetLinearVel (temp.body,force*cannoCylinder[2],force*cannoCylinder[6],force*cannoCylinder[10]);
+	    dBodySetAngularVel (temp.body,0,0,0);
+    	bullets->push_back(temp);
+    	
+		delay=0;
     }
 }
 

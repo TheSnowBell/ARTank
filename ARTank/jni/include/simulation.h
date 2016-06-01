@@ -2,6 +2,7 @@
 #define SIMULATION_H
 
 #include <ode/ode.h>
+#include <vector>
 
 #define WBOXSIZE 1.0		// size of wall boxes
 #define CANNON_X 10		// x position of cannon
@@ -9,11 +10,15 @@
 #define CANNON_BALL_MASS 10	// mass of the cannon ball
 #define CANNON_BALL_RADIUS 0.5
 
+typedef struct bodygeom{
+	dBodyID body;
+	dGeomID geom;
+}BodyGeom;
+
 class Simulation
 {
     dGeomID ground;
     dBodyID wall_bodies[10000];
-    dGeomID cannon_ball_geom;
     dMass m;
 
     static dWorldID world;
@@ -36,7 +41,7 @@ public:
     void AttMatrixCanno(dMatrix3 markerBaseMat, dMatrix3 markerGeomMat, dReal cannon_elevation);
     dGeomID wall_boxes[10000];
     int wb;
-    dBodyID cannon_ball_body;
+   	std::vector<BodyGeom> *bullets;
 };
 
 #endif // SIMULATION_H

@@ -5,7 +5,6 @@ import org.artoolkit.ar.base.rendering.ARRenderer;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -85,8 +84,6 @@ public class ARTank extends ARActivity implements OnClickListener{
  		mainLayout.addView(lineLayout);
  		mainLayout.addView(buttonShot, new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, Gravity.END | Gravity.BOTTOM ));
  		mainLayout.addView(buttonReset, new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, Gravity.END | Gravity.TOP ));
-		
-		
 	}
 	
 	@Override
@@ -138,25 +135,7 @@ public class ARTank extends ARActivity implements OnClickListener{
 		break;
 		
 		case 3:
-			
-			if(loopSimulation!=null){
-				simulation.setFinished(true);
-				loopSimulation.interrupt();
-				try {
-					loopSimulation.join();
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
-				simulation.Shutdown();
-			}
-			
-			simulation = new Simulation();
-			loopSimulation = new Thread(simulation);
-			
-			loopSimulation.start();
-			
+			simulation.Reset();
 		break;
 		}
 		

@@ -55,7 +55,9 @@ JNIEXPORT void JNICALL Java_br_artoolkit_artank_ARTankRenderer_initialiseMarkers
 
 JNIEXPORT void JNICALL Java_br_artoolkit_artank_Simulation_initialise
   (JNIEnv *, jobject object){
-   	ARLOG("Creating.....");
+#ifdef DEBUG
+	ARLOG("Creating.....");
+#endif
 	isreset = false;
 	isatirar = false;
 	isdeleted = false;
@@ -89,12 +91,14 @@ static void draw(float gl[16], int id){
 			glPopMatrix();
 		}
 
-		glPushMatrix();
-			GLfloat gl[16];
-			ODEtoOpenGL2(simulation->cannon_ball_body, gl);
-			glMultMatrixf(gl);
-			cannoBall.draw();
-		glPopMatrix();
+		for (int i=0; i < simulation->bullets->size(); i++){
+		    glPushMatrix();
+			    GLfloat gl[16];
+  			    ODEtoOpenGL2(simulation->bullets->at(i).body, gl);
+			    glMultMatrixf(gl);
+			    cannoBall.draw();
+		    glPopMatrix();
+		}
 	}else if(id == markers[1]){
 
 		glPushMatrix();
@@ -116,15 +120,6 @@ static void draw(float gl[16], int id){
 
 JNIEXPORT void JNICALL Java_br_artoolkit_artank_ARTankRenderer_drawFrame
   (JNIEnv *env, jobject object){
-
-	if(isdeleted){
-		return;
-	}
-
-	if(isreset){
-		simulation->reset();
-		isreset = false;
-	}
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -173,13 +168,17 @@ JNIEXPORT void JNICALL Java_br_artoolkit_artank_ARTankRenderer_drawFrame
 
 JNIEXPORT void JNICALL Java_br_artoolkit_artank_Simulation_shutdown
   (JNIEnv *, jobject object){
+#ifdef DEBUG
    	ARLOG("Shutdown.....");
+#endif
 	delete simulation;
 }
 
 JNIEXPORT void JNICALL Java_br_artoolkit_artank_Simulation_shot
   (JNIEnv *, jobject object){
+#ifdef DEBUG
   	ARLOG("Shoting.....");
+#endif
 	int count=0;
 	for(int i=0; i<2; i++){
 		if (arwQueryMarkerVisibility(markers[i])) {
@@ -198,15 +197,17 @@ JNIEXPORT void JNICALL Java_br_artoolkit_artank_Simulation_shot
 	    OpenGLtoODE(trans, markerGeomMat);
 
 	    simulation->AttMatrixCanno(markerBaseMat,markerGeomMat, cannon_elevation);
-	 
-		simulation->atirar();
+	 	isatirar=true;
+//		simulation->atirar();
 	}
 	
 }
 
 JNIEXPORT void JNICALL Java_br_artoolkit_artank_Simulation__1cannonUp
   (JNIEnv *, jobject object){
+#ifdef DEBUG
   	ARLOG("Cannon Up.....");
+#endif
 	cannon_elevation = cannon_elevation - 0.5;
 	if(cannon_elevation == -12.0){
 		cannon_elevation = 0.0;
@@ -215,17 +216,34 @@ JNIEXPORT void JNICALL Java_br_artoolkit_artank_Simulation__1cannonUp
 
 JNIEXPORT void JNICALL Java_br_artoolkit_artank_Simulation__1cannonDown
   (JNIEnv *, jobject object){
+#ifdef DEBUG
   	ARLOG("Cannon Down.....");
+#endif
 	cannon_elevation = cannon_elevation + 0.5;
 	if(cannon_elevation == 12.0){
 		cannon_elevation = 0.0;
 	}
 }
 
+JNIEXPORT void JNICALL Java_br_artoolkit_artank_Simulation_reset
+  (JNIEnv *, jobject object){
+	isreset = true;
+}
+
 JNIEXPORT void JNICALL Java_br_artoolkit_artank_Simulation_running
   (JNIEnv *, jobject object){
+	if(isreset){
+		simulation->reset();
+		isreset=false;
+	}
+  
+    if(isatirar){
+		simulation->atirar();
+		isatirar=false;
+	}
+	
  	simulation->simLoop(false);
- }
+}
 
 static void OpenGLtoODE(GLfloat *matriz, dMatrix3 dTransMat){
 

@@ -13,6 +13,7 @@ public class Simulation implements Runnable{
 	public static native void initialise();
 	public static native void running();
 
+
 	private boolean finished;
 
 	public Simulation() {

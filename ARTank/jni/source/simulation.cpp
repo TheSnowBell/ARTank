@@ -106,7 +106,9 @@ void Simulation::shutdownSimulation()
 void Simulation::simLoop(bool pause)
 {
     if (!pause) {
-	    delay++;
+    	if(delay<10){
+	    	delay++;
+	    }
         dSpaceCollide (space,0,&nearCallback);
         dWorldQuickStep (world,0.05);
         dJointGroupEmpty (contactgroup);
